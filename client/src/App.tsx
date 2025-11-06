@@ -1,19 +1,39 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
+import { Header } from '@components/Header'
+import { HomePage } from '@pages/HomePage'
+import { useGoogleMapsLoader } from '@hooks/useGoogleMapsLoader'
 
 function App() {
+  // Google Maps API 로드
+  const { isLoaded, error } = useGoogleMapsLoader()
+
+  if (error) {
+    console.error('Google Maps 로드 오류:', error)
+  }
+
   return (
     <Router>
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen">
+        <Header />
         <Routes>
-          <Route path="/" element={
+          <Route path="/" element={<HomePage />} />
+          <Route path="/my-trips" element={
             <div className="flex items-center justify-center h-screen">
               <div className="text-center">
-                <h1 className="text-4xl font-bold text-primary-600 mb-4">
-                  여행 개인화 앱
+                <h1 className="text-3xl font-bold text-gray-800 mb-4">
+                  내 여행
                 </h1>
-                <p className="text-gray-600">
-                  Travel Personalization App
-                </p>
+                <p className="text-gray-600">개발 중입니다...</p>
+              </div>
+            </div>
+          } />
+          <Route path="/preferences" element={
+            <div className="flex items-center justify-center h-screen">
+              <div className="text-center">
+                <h1 className="text-3xl font-bold text-gray-800 mb-4">
+                  취향 설정
+                </h1>
+                <p className="text-gray-600">개발 중입니다...</p>
               </div>
             </div>
           } />
