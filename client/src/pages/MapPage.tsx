@@ -112,22 +112,30 @@ export const MapPage: React.FC = () => {
     ...MOCK_RECOMMENDATION_MARKERS,
   ]
 
-  // 실시간 정보 로드
+  // 실시간 정보 로드 - 현재는 Mock 데이터만 사용하므로 비활성화
+  // TODO: 실제 API 연동 시 사용자의 출발지/도착지 역 정보를 기반으로 로드
   useEffect(() => {
-    const loadRealtimeInfo = async () => {
-      try {
-        const [busData, subwayData] = await Promise.all([
-          getBusArrival('홍대입구역'),
-          getSubwayArrival('홍대입구역'),
-        ])
-        setBusArrivals(busData)
-        setSubwayArrivals(subwayData)
-      } catch (error) {
-        console.error('실시간 정보 로드 실패:', error)
-      }
-    }
+    // 실시간 정보는 실제 공공데이터 API 키가 있을 때만 의미가 있습니다
+    // 현재는 Mock 데이터를 사용하므로 로드하지 않습니다
+    console.log('⚠️ [MapPage] 실시간 정보는 현재 비활성화됨 (Mock 데이터)')
 
-    loadRealtimeInfo()
+    // const loadRealtimeInfo = async () => {
+    //   try {
+    //     // 사용자 경로의 첫 번째 역 이름 추출
+    //     const firstStation = selectedRoute?.steps.find(s => s.mode === 'subway' || s.mode === 'bus')
+    //     const stationName = firstStation?.from.name || '서울역'
+    //
+    //     const [busData, subwayData] = await Promise.all([
+    //       getBusArrival(stationName),
+    //       getSubwayArrival(stationName),
+    //     ])
+    //     setBusArrivals(busData)
+    //     setSubwayArrivals(subwayData)
+    //   } catch (error) {
+    //     console.error('실시간 정보 로드 실패:', error)
+    //   }
+    // }
+    // loadRealtimeInfo()
   }, [])
 
   // 비용 내역 로드
