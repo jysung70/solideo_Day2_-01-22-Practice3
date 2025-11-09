@@ -27,4 +27,16 @@ export default defineConfig({
       },
     },
   },
+  build: {
+    // 캐시 무효화를 위한 설정
+    rollupOptions: {
+      output: {
+        manualChunks: undefined,
+      },
+    },
+  },
+  // 개발 모드에서 강제 리로드
+  optimizeDeps: {
+    force: true,
+  },
 })
