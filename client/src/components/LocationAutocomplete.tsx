@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { Location } from '@types/index'
+import { searchKoreanCity, getSuggestions } from '@/utils/koreanCities'
 
 interface LocationAutocompleteProps {
   value: Location | null
@@ -17,9 +18,13 @@ export const LocationAutocomplete: React.FC<LocationAutocompleteProps> = ({
   error,
 }) => {
   const [inputValue, setInputValue] = useState(value?.address || '')
+  const [suggestions, setSuggestions] = useState<string[]>([])
+  const [showSuggestions, setShowSuggestions] = useState(false)
   const [recentSearches, setRecentSearches] = useState<string[]>([])
+  const [useGoogleAPI, setUseGoogleAPI] = useState(false)
   const inputRef = useRef<HTMLInputElement>(null)
   const autocompleteRef = useRef<google.maps.places.Autocomplete | null>(null)
+  const suggestionsRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     // 최근 검색 기록 불러오기
@@ -32,17 +37,17 @@ export const LocationAutocomplete: React.FC<LocationAutocompleteProps> = ({
   useEffect(() => {
     if (!inputRef.current) return
 
-    // Google Places Autocomplete 초기화
+    // Google Places Autocomplete 초기화 시도
     const initAutocomplete = async () => {
       try {
-        // Google Maps API가 로드될 때까지 대기
         if (!window.google?.maps?.places) {
-          console.warn('Google Maps API가 아직 로드되지 않았습니다.')
+          console.log('Google Maps API 없음 - 한국 도시 데이터 사용')
+          setUseGoogleAPI(false)
           return
         }
 
         autocompleteRef.current = new google.maps.places.Autocomplete(inputRef.current!, {
-          componentRestrictions: { country: 'kr' }, // 한국으로 제한
+          componentRestrictions: { country: 'kr' },
           fields: ['address_components', 'geometry', 'name', 'formatted_address', 'place_id'],
         })
 
@@ -63,17 +68,15 @@ export const LocationAutocomplete: React.FC<LocationAutocompleteProps> = ({
 
           setInputValue(location.address)
           onChange(location)
-
-          // 최근 검색에 추가
-          const updated = [
-            location.address,
-            ...recentSearches.filter((s) => s !== location.address),
-          ].slice(0, 5)
-          setRecentSearches(updated)
-          localStorage.setItem('recentLocationSearches', JSON.stringify(updated))
+          saveToRecentSearches(location.address)
+          setShowSuggestions(false)
         })
+
+        setUseGoogleAPI(true)
+        console.log('Google Maps API 사용 활성화')
       } catch (error) {
         console.error('Autocomplete 초기화 오류:', error)
+        setUseGoogleAPI(false)
       }
     }
 
@@ -82,7 +85,12 @@ export const LocationAutocomplete: React.FC<LocationAutocompleteProps> = ({
       if (window.google?.maps?.places) {
         initAutocomplete()
       } else {
-        setTimeout(checkAndInit, 100)
+        // 1초 후에도 없으면 한국 도시 데이터 사용
+        setTimeout(() => {
+          if (!window.google?.maps?.places) {
+            setUseGoogleAPI(false)
+          }
+        }, 1000)
       }
     }
 
@@ -95,17 +103,96 @@ export const LocationAutocomplete: React.FC<LocationAutocompleteProps> = ({
     }
   }, [])
 
+  // 외부 클릭 감지
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        suggestionsRef.current &&
+        !suggestionsRef.current.contains(event.target as Node) &&
+        !inputRef.current?.contains(event.target as Node)
+      ) {
+        setShowSuggestions(false)
+      }
+    }
+
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [])
+
+  const saveToRecentSearches = (address: string) => {
+    const updated = [address, ...recentSearches.filter((s) => s !== address)].slice(0, 5)
+    setRecentSearches(updated)
+    localStorage.setItem('recentLocationSearches', JSON.stringify(updated))
+  }
+
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setInputValue(e.target.value)
-    if (!e.target.value) {
+    const newValue = e.target.value
+    setInputValue(newValue)
+
+    if (!newValue) {
       onChange(null)
+      setSuggestions([])
+      setShowSuggestions(false)
+      return
+    }
+
+    // Google API가 없을 때만 수동 자동완성 사용
+    if (!useGoogleAPI) {
+      const newSuggestions = getSuggestions(newValue)
+      setSuggestions(newSuggestions)
+      setShowSuggestions(newSuggestions.length > 0)
+    }
+  }
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter' && !useGoogleAPI) {
+      e.preventDefault()
+      handleManualSubmit()
+    }
+  }
+
+  const handleManualSubmit = () => {
+    if (!inputValue.trim()) return
+
+    const location = searchKoreanCity(inputValue)
+    if (location) {
+      onChange(location)
+      saveToRecentSearches(location.address)
+      setInputValue(location.address)
+      setShowSuggestions(false)
+      console.log('✅ 위치 설정:', location)
+    } else {
+      // 도시를 찾지 못한 경우 기본 좌표 사용
+      const fallbackLocation: Location = {
+        address: inputValue,
+        lat: 37.5665, // 서울 기본 좌표
+        lng: 126.9780,
+      }
+      onChange(fallbackLocation)
+      saveToRecentSearches(inputValue)
+      setShowSuggestions(false)
+      console.warn('⚠️ 도시를 찾지 못해 기본 좌표 사용:', fallbackLocation)
+    }
+  }
+
+  const handleSuggestionClick = (suggestion: string) => {
+    const location = searchKoreanCity(suggestion)
+    if (location) {
+      setInputValue(location.address)
+      onChange(location)
+      saveToRecentSearches(location.address)
+      setShowSuggestions(false)
+      console.log('✅ 위치 설정:', location)
     }
   }
 
   const handleRecentClick = (address: string) => {
     setInputValue(address)
-    // 최근 검색에서 선택 시 실제 위치 정보는 없으므로 주소만 설정
-    // 실제로는 Geocoding API를 사용해야 하지만, 여기서는 간단히 처리
+    const location = searchKoreanCity(address)
+    if (location) {
+      onChange(location)
+      console.log('✅ 최근 검색에서 선택:', location)
+    }
   }
 
   return (
@@ -118,13 +205,21 @@ export const LocationAutocomplete: React.FC<LocationAutocompleteProps> = ({
           type="text"
           value={inputValue}
           onChange={handleInputChange}
+          onKeyDown={handleKeyDown}
+          onFocus={() => {
+            if (!useGoogleAPI && inputValue) {
+              const newSuggestions = getSuggestions(inputValue)
+              setSuggestions(newSuggestions)
+              setShowSuggestions(newSuggestions.length > 0)
+            }
+          }}
           placeholder={placeholder}
           className={`w-full px-4 py-2.5 border ${
             error ? 'border-red-500' : 'border-gray-300'
           } rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent transition`}
         />
 
-        {/* 최근 검색 아이콘 */}
+        {/* 아이콘 */}
         <div className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400">
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -147,9 +242,37 @@ export const LocationAutocomplete: React.FC<LocationAutocompleteProps> = ({
             />
           </svg>
         </div>
+
+        {/* 자동완성 제안 (Google API 없을 때만) */}
+        {!useGoogleAPI && showSuggestions && suggestions.length > 0 && (
+          <div
+            ref={suggestionsRef}
+            className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-y-auto"
+          >
+            {suggestions.map((suggestion, idx) => (
+              <button
+                key={idx}
+                onClick={() => handleSuggestionClick(suggestion)}
+                className="block w-full text-left px-4 py-2 hover:bg-primary-50 transition"
+              >
+                <div className="flex items-center">
+                  <span className="text-gray-400 mr-2">📍</span>
+                  <span className="font-medium text-gray-900">{suggestion}</span>
+                </div>
+              </button>
+            ))}
+          </div>
+        )}
       </div>
 
       {error && <p className="text-sm text-red-600">{error}</p>}
+
+      {/* API 상태 표시 */}
+      {!useGoogleAPI && (
+        <p className="text-xs text-gray-500">
+          💡 한국 주요 도시 입력 가능 (예: 서울, 대전, 부산 등) - 엔터를 눌러 선택하세요
+        </p>
+      )}
 
       {/* 최근 검색 기록 */}
       {recentSearches.length > 0 && !inputValue && (
