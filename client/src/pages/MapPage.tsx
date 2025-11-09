@@ -38,6 +38,7 @@ interface LocationState {
 }
 
 export const MapPage: React.FC = () => {
+  // 강제 리로드를 위한 더미 변경
   const [selectedRouteId, setSelectedRouteId] = useState<string | null>('route-1')
   const [selectedMarker, setSelectedMarker] = useState<MarkerData | null>(null)
   const [showRoutePanel, setShowRoutePanel] = useState(true)
@@ -86,8 +87,12 @@ export const MapPage: React.FC = () => {
   console.log('✅ [MapPage] FINAL origin:', origin)
   console.log('✅ [MapPage] FINAL destination:', destination)
 
+  console.log('🔥🔥🔥 [MapPage] NEW CODE IS RUNNING - NOVEMBER 9 UPDATE 🔥🔥🔥')
+
   // 동적으로 경로 생성 (사용자 입력 기반)
+  console.log('🚀 [MapPage] About to call generateRoutes...')
   const dynamicRoutes = generateRoutes(origin, destination)
+  console.log('🚀 [MapPage] About to call generateRouteOptions...')
   const dynamicRouteOptions = generateRouteOptions(origin, destination)
 
   console.log('🗺️ [MapPage] Generated dynamic routes:', dynamicRoutes.length)
