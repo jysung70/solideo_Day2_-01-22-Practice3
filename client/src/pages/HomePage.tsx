@@ -6,9 +6,25 @@ export const HomePage: React.FC = () => {
   const navigate = useNavigate()
 
   const handleTravelSubmit = (data: TravelFormData) => {
-    console.log('여행 계획 데이터:', data)
-    // TODO: 실제 API 호출 후 결과를 지도 페이지로 전달
-    // 현재는 더미 데이터로 지도 페이지로 이동
+    console.log('🚀 [HomePage] 여행 계획 데이터:', data)
+    console.log('🚀 [HomePage] origin:', data.origin)
+    console.log('🚀 [HomePage] destination:', data.destination)
+
+    // localStorage에 데이터 저장 (더 안정적)
+    const travelData = {
+      origin: data.origin,
+      destination: data.destination,
+      departureDate: data.departureDate?.toISOString(),
+      departureTime: data.departureTime,
+      duration: data.duration,
+      participants: data.participants,
+      timestamp: new Date().toISOString(),
+    }
+
+    localStorage.setItem('currentTravelPlan', JSON.stringify(travelData))
+    console.log('💾 [HomePage] localStorage에 저장:', travelData)
+
+    // 지도 페이지로 이동
     navigate('/map')
   }
 
