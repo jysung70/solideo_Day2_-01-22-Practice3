@@ -13,11 +13,14 @@ cat > client/.env.local << EOF
 # Google Maps API
 VITE_GOOGLE_MAPS_API_KEY=${GOOGLE_MAPS_API_KEY:-}
 
-# API Base URL
-VITE_API_URL=${VITE_API_URL:-http://localhost:5000/api}
+# 공공데이터포털 API
+VITE_PUBLIC_DATA_API_KEY=${PUBLIC_DATA_API_KEY:-}
 
 # Kakao API
-VITE_KAKAO_REST_API_KEY=${KAKAO_REST_API_KEY:-}
+VITE_KAKAO_API_KEY=${KAKAO_API_KEY:-}
+
+# API Base URL
+VITE_API_URL=${VITE_API_URL:-http://localhost:5000/api}
 EOF
 
 # server/.env 파일 생성
@@ -51,10 +54,16 @@ else
   echo "  ✗ GOOGLE_MAPS_API_KEY (미설정)"
 fi
 
-if [ -n "$KAKAO_REST_API_KEY" ]; then
-  echo "  ✓ KAKAO_REST_API_KEY"
+if [ -n "$PUBLIC_DATA_API_KEY" ]; then
+  echo "  ✓ PUBLIC_DATA_API_KEY"
 else
-  echo "  ✗ KAKAO_REST_API_KEY (미설정)"
+  echo "  ✗ PUBLIC_DATA_API_KEY (미설정)"
+fi
+
+if [ -n "$KAKAO_API_KEY" ]; then
+  echo "  ✓ KAKAO_API_KEY"
+else
+  echo "  ✗ KAKAO_API_KEY (미설정)"
 fi
 
 echo ""
