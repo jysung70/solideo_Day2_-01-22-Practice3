@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react'
-import { useLocation } from 'react-router-dom'
 import { MapContainer } from '@components/MapContainer'
 import { RouteInfo } from '@components/RouteInfo'
 import { RouteTimeline } from '@components/RouteTimeline'
@@ -38,13 +37,6 @@ interface LocationState {
 }
 
 export const MapPage: React.FC = () => {
-  const location = useLocation()
-  const state = location.state as LocationState | null
-
-  console.log('📍 [MapPage] location.state:', state)
-  console.log('📍 [MapPage] origin from state:', state?.origin)
-  console.log('📍 [MapPage] destination from state:', state?.destination)
-
   const [selectedRouteId, setSelectedRouteId] = useState<string | null>('route-1')
   const [selectedMarker, setSelectedMarker] = useState<MarkerData | null>(null)
   const [showRoutePanel, setShowRoutePanel] = useState(true)
@@ -56,11 +48,39 @@ export const MapPage: React.FC = () => {
   const [costBreakdown, setCostBreakdown] = useState<CostBreakdownType | null>(null)
   const [realtimeType, setRealtimeType] = useState<'bus' | 'subway'>('subway')
 
+  // localStorage에서 여행 계획 데이터 가져오기
+  const getTravelData = (): LocationState | null => {
+    try {
+      const saved = localStorage.getItem('currentTravelPlan')
+      if (!saved) {
+        console.log('📍 [MapPage] localStorage에 저장된 데이터 없음')
+        return null
+      }
+
+      const data = JSON.parse(saved)
+      console.log('📍 [MapPage] localStorage에서 불러온 데이터:', data)
+
+      return {
+        origin: data.origin,
+        destination: data.destination,
+        departureDate: data.departureDate ? new Date(data.departureDate) : null,
+        departureTime: data.departureTime,
+        duration: data.duration,
+        participants: data.participants,
+      }
+    } catch (error) {
+      console.error('❌ [MapPage] localStorage 읽기 오류:', error)
+      return null
+    }
+  }
+
+  const travelData = getTravelData()
+
   // 사용자 입력 데이터 또는 기본값 사용
-  const origin = state?.origin || MOCK_LOCATIONS.seoul_station
-  const destination = state?.destination || MOCK_LOCATIONS.gangnam_station
-  const participants = state?.participants || 1
-  const duration = state?.duration || 1
+  const origin = travelData?.origin || MOCK_LOCATIONS.seoul_station
+  const destination = travelData?.destination || MOCK_LOCATIONS.gangnam_station
+  const participants = travelData?.participants || 1
+  const duration = travelData?.duration || 1
 
   console.log('✅ [MapPage] FINAL origin:', origin)
   console.log('✅ [MapPage] FINAL destination:', destination)

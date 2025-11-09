@@ -10,17 +10,22 @@ export const HomePage: React.FC = () => {
     console.log('🚀 [HomePage] origin:', data.origin)
     console.log('🚀 [HomePage] destination:', data.destination)
 
-    // 사용자 입력 데이터를 지도 페이지로 전달
-    navigate('/map', {
-      state: {
-        origin: data.origin,
-        destination: data.destination,
-        departureDate: data.departureDate,
-        departureTime: data.departureTime,
-        duration: data.duration,
-        participants: data.participants,
-      }
-    })
+    // localStorage에 데이터 저장 (더 안정적)
+    const travelData = {
+      origin: data.origin,
+      destination: data.destination,
+      departureDate: data.departureDate?.toISOString(),
+      departureTime: data.departureTime,
+      duration: data.duration,
+      participants: data.participants,
+      timestamp: new Date().toISOString(),
+    }
+
+    localStorage.setItem('currentTravelPlan', JSON.stringify(travelData))
+    console.log('💾 [HomePage] localStorage에 저장:', travelData)
+
+    // 지도 페이지로 이동
+    navigate('/map')
   }
 
   return (
