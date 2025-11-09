@@ -6,7 +6,9 @@ export const HomePage: React.FC = () => {
   const navigate = useNavigate()
 
   const handleTravelSubmit = (data: TravelFormData) => {
-    console.log('여행 계획 데이터:', data)
+    console.log('🚀 [HomePage] 여행 계획 데이터:', data)
+    console.log('🚀 [HomePage] origin:', data.origin)
+    console.log('🚀 [HomePage] destination:', data.destination)
 
     // 사용자 입력 데이터를 지도 페이지로 전달
     navigate('/map', {

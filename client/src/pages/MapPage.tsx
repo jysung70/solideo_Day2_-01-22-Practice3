@@ -41,6 +41,10 @@ export const MapPage: React.FC = () => {
   const location = useLocation()
   const state = location.state as LocationState | null
 
+  console.log('📍 [MapPage] location.state:', state)
+  console.log('📍 [MapPage] origin from state:', state?.origin)
+  console.log('📍 [MapPage] destination from state:', state?.destination)
+
   const [selectedRouteId, setSelectedRouteId] = useState<string | null>('route-1')
   const [selectedMarker, setSelectedMarker] = useState<MarkerData | null>(null)
   const [showRoutePanel, setShowRoutePanel] = useState(true)
@@ -57,6 +61,9 @@ export const MapPage: React.FC = () => {
   const destination = state?.destination || MOCK_LOCATIONS.gangnam_station
   const participants = state?.participants || 1
   const duration = state?.duration || 1
+
+  console.log('✅ [MapPage] FINAL origin:', origin)
+  console.log('✅ [MapPage] FINAL destination:', destination)
 
   // 선택된 경로 데이터
   const selectedRoute = MOCK_ROUTE_OPTIONS.find(r => r.id === selectedRouteId) || MOCK_ROUTE_OPTIONS[0]
