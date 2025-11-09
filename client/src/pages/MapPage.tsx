@@ -19,6 +19,7 @@ import {
   MOCK_BUS_ARRIVALS,
   MOCK_SUBWAY_ARRIVALS,
 } from '@/mocks/transitData'
+import { generateRoutes, generateRouteOptions } from '@/utils/routeGenerator'
 import {
   getBusArrival,
   getSubwayArrival,
@@ -85,8 +86,15 @@ export const MapPage: React.FC = () => {
   console.log('✅ [MapPage] FINAL origin:', origin)
   console.log('✅ [MapPage] FINAL destination:', destination)
 
+  // 동적으로 경로 생성 (사용자 입력 기반)
+  const dynamicRoutes = generateRoutes(origin, destination)
+  const dynamicRouteOptions = generateRouteOptions(origin, destination)
+
+  console.log('🗺️ [MapPage] Generated dynamic routes:', dynamicRoutes.length)
+  console.log('🗺️ [MapPage] Generated dynamic route options:', dynamicRouteOptions.length)
+
   // 선택된 경로 데이터
-  const selectedRoute = MOCK_ROUTE_OPTIONS.find(r => r.id === selectedRouteId) || MOCK_ROUTE_OPTIONS[0]
+  const selectedRoute = dynamicRouteOptions.find(r => r.id === selectedRouteId) || dynamicRouteOptions[0]
 
   // 마커 생성
   const markers = [
@@ -237,17 +245,17 @@ export const MapPage: React.FC = () => {
             {activeTab === 'routes' && (
               <div className="space-y-4">
                 <RouteInfo
-                  routes={MOCK_ROUTES}
+                  routes={dynamicRoutes}
                   selectedRouteId={selectedRouteId}
                   onSelectRoute={handleSelectRoute}
                   onViewDetails={handleViewRouteDetails}
                 />
 
                 {/* 안내 메시지 */}
-                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                <div className="bg-green-50 border border-green-200 rounded-lg p-4">
                   <div className="flex items-start gap-2">
                     <svg
-                      className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5"
+                      className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5"
                       fill="none"
                       viewBox="0 0 24 24"
                       stroke="currentColor"
@@ -256,13 +264,13 @@ export const MapPage: React.FC = () => {
                         strokeLinecap="round"
                         strokeLinejoin="round"
                         strokeWidth={2}
-                        d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                        d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
                       />
                     </svg>
                     <div className="text-sm">
-                      <p className="font-medium text-blue-800 mb-1">Mock 데이터 사용 중</p>
-                      <p className="text-blue-700">
-                        실제 API 키를 설정하면 실시간 대중교통 정보를 사용할 수 있습니다.
+                      <p className="font-medium text-green-800 mb-1">동적 경로 생성됨</p>
+                      <p className="text-green-700">
+                        입력하신 출발지와 도착지를 기반으로 경로가 자동 생성되었습니다.
                       </p>
                     </div>
                   </div>
@@ -342,7 +350,7 @@ export const MapPage: React.FC = () => {
             center={origin}
             zoom={12}
             markers={markers}
-            routes={MOCK_ROUTES}
+            routes={dynamicRoutes}
             selectedRouteId={selectedRouteId}
             onMarkerClick={handleMarkerClick}
             className="h-full"
