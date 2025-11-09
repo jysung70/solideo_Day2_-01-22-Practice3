@@ -1,0 +1,16 @@
+{
+  "name": "Travel App Development",
+  "forwardPorts": [3000, 5000],
+  "portsAttributes": {
+    "3000": {
+      "label": "Frontend (Vite)",
+      "onAutoForward": "notify",
+      "visibility": "public"
+    },
+    "5000": {
+      "label": "Backend (Express)",
+      "onAutoForward": "notify",
+      "visibility": "public"
+    }
+  }
+}
