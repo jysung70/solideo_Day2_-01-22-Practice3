@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react'
+import { useLocation } from 'react-router-dom'
 import { MapContainer } from '@components/MapContainer'
 import { RouteInfo } from '@components/RouteInfo'
 import { RouteTimeline } from '@components/RouteTimeline'
@@ -6,6 +7,7 @@ import { RealtimeInfo } from '@components/RealtimeInfo'
 import { CostBreakdown } from '@components/CostBreakdown'
 import { MarkerInfoWindow } from '@components/MarkerInfoWindow'
 import { MarkerData } from '@types/map'
+import { Location } from '@/types'
 import { BusArrival, SubwayArrival, CostBreakdown as CostBreakdownType } from '@types/transit'
 import {
   MOCK_ROUTES,
@@ -26,7 +28,19 @@ import {
 
 type TabType = 'routes' | 'timeline' | 'realtime' | 'cost'
 
+interface LocationState {
+  origin: Location | null
+  destination: Location | null
+  departureDate: Date | null
+  departureTime: string
+  duration: number
+  participants: number
+}
+
 export const MapPage: React.FC = () => {
+  const location = useLocation()
+  const state = location.state as LocationState | null
+
   const [selectedRouteId, setSelectedRouteId] = useState<string | null>('route-1')
   const [selectedMarker, setSelectedMarker] = useState<MarkerData | null>(null)
   const [showRoutePanel, setShowRoutePanel] = useState(true)
@@ -38,9 +52,11 @@ export const MapPage: React.FC = () => {
   const [costBreakdown, setCostBreakdown] = useState<CostBreakdownType | null>(null)
   const [realtimeType, setRealtimeType] = useState<'bus' | 'subway'>('subway')
 
-  // 더미 데이터: 서울역 → 강남역
-  const origin = MOCK_LOCATIONS.seoul_station
-  const destination = MOCK_LOCATIONS.gangnam_station
+  // 사용자 입력 데이터 또는 기본값 사용
+  const origin = state?.origin || MOCK_LOCATIONS.seoul_station
+  const destination = state?.destination || MOCK_LOCATIONS.gangnam_station
+  const participants = state?.participants || 1
+  const duration = state?.duration || 1
 
   // 선택된 경로 데이터
   const selectedRoute = MOCK_ROUTE_OPTIONS.find(r => r.id === selectedRouteId) || MOCK_ROUTE_OPTIONS[0]
@@ -73,7 +89,7 @@ export const MapPage: React.FC = () => {
   useEffect(() => {
     const loadCostBreakdown = async () => {
       try {
-        const cost = await getCostBreakdown(selectedRoute, 1, 1)
+        const cost = await getCostBreakdown(selectedRoute, participants, duration)
         setCostBreakdown(cost)
       } catch (error) {
         console.error('비용 내역 로드 실패:', error)
@@ -83,7 +99,7 @@ export const MapPage: React.FC = () => {
     if (selectedRoute) {
       loadCostBreakdown()
     }
-  }, [selectedRoute])
+  }, [selectedRoute, participants, duration])
 
   const handleMarkerClick = (marker: MarkerData) => {
     setSelectedMarker(marker)
@@ -142,7 +158,7 @@ export const MapPage: React.FC = () => {
             <div>
               <h1 className="text-2xl font-bold text-gray-800">경로 탐색</h1>
               <p className="text-sm text-gray-600 mt-1">
-                {origin.name} → {destination.name}
+                {(origin as any).name || origin.address} → {(destination as any).name || destination.address}
               </p>
             </div>
             <button
@@ -283,7 +299,7 @@ export const MapPage: React.FC = () => {
             )}
 
             {activeTab === 'cost' && costBreakdown && (
-              <CostBreakdown costBreakdown={costBreakdown} participants={1} />
+              <CostBreakdown costBreakdown={costBreakdown} participants={participants} />
             )}
           </div>
         </div>

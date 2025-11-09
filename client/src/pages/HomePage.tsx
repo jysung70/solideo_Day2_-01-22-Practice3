@@ -7,9 +7,18 @@ export const HomePage: React.FC = () => {
 
   const handleTravelSubmit = (data: TravelFormData) => {
     console.log('여행 계획 데이터:', data)
-    // TODO: 실제 API 호출 후 결과를 지도 페이지로 전달
-    // 현재는 더미 데이터로 지도 페이지로 이동
-    navigate('/map')
+
+    // 사용자 입력 데이터를 지도 페이지로 전달
+    navigate('/map', {
+      state: {
+        origin: data.origin,
+        destination: data.destination,
+        departureDate: data.departureDate,
+        departureTime: data.departureTime,
+        duration: data.duration,
+        participants: data.participants,
+      }
+    })
   }
 
   return (
