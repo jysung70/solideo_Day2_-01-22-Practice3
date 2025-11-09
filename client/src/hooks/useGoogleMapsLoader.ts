@@ -9,8 +9,9 @@ export const useGoogleMapsLoader = () => {
     const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY
 
     if (!apiKey) {
-      console.warn('Google Maps API 키가 설정되지 않았습니다.')
-      setError(new Error('Google Maps API 키가 필요합니다.'))
+      console.warn('⚠️ Google Maps API 키가 설정되지 않았습니다. 지도 기능이 비활성화됩니다.')
+      console.warn('📝 client/.env 파일에서 VITE_GOOGLE_MAPS_API_KEY를 설정하세요.')
+      setIsLoaded(false)
       return
     }
 
