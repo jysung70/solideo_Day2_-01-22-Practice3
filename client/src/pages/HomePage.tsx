@@ -1,11 +1,15 @@
 import React from 'react'
+import { useNavigate } from 'react-router-dom'
 import { TravelInputCard, TravelFormData } from '@components/TravelInputCard'
 
 export const HomePage: React.FC = () => {
+  const navigate = useNavigate()
+
   const handleTravelSubmit = (data: TravelFormData) => {
     console.log('여행 계획 데이터:', data)
-    // TODO: 실제 API 호출 또는 다음 페이지로 이동
-    alert('여행 계획이 제출되었습니다! (개발 중)')
+    // TODO: 실제 API 호출 후 결과를 지도 페이지로 전달
+    // 현재는 더미 데이터로 지도 페이지로 이동
+    navigate('/map')
   }
 
   return (

@@ -1,6 +1,7 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
 import { Header } from '@components/Header'
 import { HomePage } from '@pages/HomePage'
+import { MapPage } from '@pages/MapPage'
 import { useGoogleMapsLoader } from '@hooks/useGoogleMapsLoader'
 
 function App() {
@@ -17,6 +18,7 @@ function App() {
         <Header />
         <Routes>
           <Route path="/" element={<HomePage />} />
+          <Route path="/map" element={<MapPage />} />
           <Route path="/my-trips" element={
             <div className="flex items-center justify-center h-screen">
               <div className="text-center">
