@@ -112,7 +112,32 @@ cd travel-app
 ```
 
 2. 환경 변수 설정
+
+**⚠️ 보안 주의: API 키를 Git에 커밋하지 마세요!**
+
+#### GitHub Codespaces 사용 (권장)
 ```bash
+# 1. GitHub Codespaces에서 Secrets 설정
+#    - 왼쪽 사이드바 레포지토리 이름 옆 '...' 클릭
+#    - 'Codespace configuration' 선택
+#    - 'Secrets' 탭에서 다음 환경 변수 추가:
+#      * GOOGLE_MAPS_API_KEY
+#      * KAKAO_REST_API_KEY
+#      * PUBLIC_DATA_API_KEY (선택)
+#      * OPENWEATHER_API_KEY (선택)
+
+# 2. 환경 변수 파일 자동 생성
+./setup-env.sh
+```
+
+#### 로컬 개발
+```bash
+# client/.env.local 파일 생성 (이 파일은 Git에 커밋되지 않습니다)
+cd client
+cp .env.example .env.local
+# .env.local 파일을 열어 필요한 API 키를 입력하세요
+
+cd ../server
 cp .env.example .env
 # .env 파일을 열어 필요한 API 키를 입력하세요
 ```

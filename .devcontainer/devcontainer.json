@@ -12,5 +12,7 @@
       "onAutoForward": "notify",
       "visibility": "public"
     }
-  }
+  },
+  "postCreateCommand": "bash setup-env.sh",
+  "postStartCommand": "bash setup-env.sh"
 }
