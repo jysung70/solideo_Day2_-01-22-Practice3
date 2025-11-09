@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useMemo } from 'react'
 import { MapContainer } from '@components/MapContainer'
 import { RouteInfo } from '@components/RouteInfo'
 import { RouteTimeline } from '@components/RouteTimeline'
@@ -84,33 +84,27 @@ export const MapPage: React.FC = () => {
   const participants = travelData?.participants || 1
   const duration = travelData?.duration || 1
 
-  console.log('✅ [MapPage] FINAL origin:', origin)
-  console.log('✅ [MapPage] FINAL destination:', destination)
+  // 동적으로 경로 생성 (사용자 입력 기반) - useMemo로 최적화하여 무한 렌더링 방지
+  const dynamicRoutes = useMemo(() => {
+    console.log('🗺️ [MapPage] Generating routes for:', origin.address, '→', destination.address)
+    return generateRoutes(origin, destination)
+  }, [origin.lat, origin.lng, destination.lat, destination.lng])
 
-  console.log('🔥🔥🔥 [MapPage] NEW CODE IS RUNNING - NOVEMBER 9 UPDATE 🔥🔥🔥')
-
-  // 동적으로 경로 생성 (사용자 입력 기반)
-  console.log('🚀 [MapPage] About to call generateRoutes...')
-  const dynamicRoutes = generateRoutes(origin, destination)
-  console.log('🚀 [MapPage] About to call generateRouteOptions...')
-  const dynamicRouteOptions = generateRouteOptions(origin, destination)
-
-  console.log('🗺️ [MapPage] Generated dynamic routes:', dynamicRoutes.length)
-  console.log('🗺️ [MapPage] Generated dynamic route options:', dynamicRouteOptions.length)
-  console.log('🗺️ [MapPage] Dynamic route IDs:', dynamicRouteOptions.map(r => r.id))
+  const dynamicRouteOptions = useMemo(() => {
+    console.log('🗺️ [MapPage] Generating route options')
+    return generateRouteOptions(origin, destination)
+  }, [origin.lat, origin.lng, destination.lat, destination.lng])
 
   // 선택된 경로 데이터
-  const selectedRoute = dynamicRouteOptions.find(r => r.id === selectedRouteId) || dynamicRouteOptions[0]
+  const selectedRoute = useMemo(() => {
+    return dynamicRouteOptions.find(r => r.id === selectedRouteId) || dynamicRouteOptions[0]
+  }, [dynamicRouteOptions, selectedRouteId])
 
-  console.log('🎯 [MapPage] Selected route ID:', selectedRouteId)
-  console.log('🎯 [MapPage] Selected route:', selectedRoute)
-  console.log('🎯 [MapPage] Selected route steps:', selectedRoute?.steps.length)
-
-  // 마커 생성
-  const markers = [
+  // 마커 생성 - useMemo로 최적화
+  const markers = useMemo(() => [
     ...createOriginDestinationMarkers(origin, destination),
     ...MOCK_RECOMMENDATION_MARKERS,
-  ]
+  ], [origin.lat, origin.lng, destination.lat, destination.lng])
 
   // 실시간 정보 로드 - 현재는 Mock 데이터만 사용하므로 비활성화
   // TODO: 실제 API 연동 시 사용자의 출발지/도착지 역 정보를 기반으로 로드
