@@ -114,11 +114,32 @@ export class GoogleMapsService {
 
     const path: google.maps.LatLng[] = []
 
-    // 각 step의 시작과 끝 지점을 path에 추가
-    route.steps.forEach((step) => {
-      path.push(new google.maps.LatLng(step.from.lat, step.from.lng))
-      path.push(new google.maps.LatLng(step.to.lat, step.to.lng))
+    // 각 step의 시작과 끝 지점을 path에 추가 (중복 제거)
+    route.steps.forEach((step, index) => {
+      const fromLatLng = new google.maps.LatLng(step.from.lat, step.from.lng)
+      const toLatLng = new google.maps.LatLng(step.to.lat, step.to.lng)
+
+      // 첫 번째 step의 from은 항상 추가
+      if (index === 0) {
+        path.push(fromLatLng)
+      }
+
+      // to는 항상 추가 (다음 step의 from과 중복되더라도)
+      path.push(toLatLng)
     })
+
+    console.log(`🗺️ [GoogleMaps] Drawing route ${route.id}:`, {
+      name: route.name,
+      steps: route.steps.length,
+      pathPoints: path.length,
+      color: route.color,
+      isSelected
+    })
+
+    if (path.length < 2) {
+      console.warn(`⚠️ [GoogleMaps] Route ${route.id} has insufficient path points:`, path.length)
+      return
+    }
 
     const polyline = new google.maps.Polyline({
       path,

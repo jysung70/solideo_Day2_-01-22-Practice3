@@ -92,9 +92,14 @@ export const MapPage: React.FC = () => {
 
   console.log('🗺️ [MapPage] Generated dynamic routes:', dynamicRoutes.length)
   console.log('🗺️ [MapPage] Generated dynamic route options:', dynamicRouteOptions.length)
+  console.log('🗺️ [MapPage] Dynamic route IDs:', dynamicRouteOptions.map(r => r.id))
 
   // 선택된 경로 데이터
   const selectedRoute = dynamicRouteOptions.find(r => r.id === selectedRouteId) || dynamicRouteOptions[0]
+
+  console.log('🎯 [MapPage] Selected route ID:', selectedRouteId)
+  console.log('🎯 [MapPage] Selected route:', selectedRoute)
+  console.log('🎯 [MapPage] Selected route steps:', selectedRoute?.steps.length)
 
   // 마커 생성
   const markers = [

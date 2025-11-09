@@ -117,8 +117,15 @@ export function generateRouteOptions(
       }
     })
 
+    // route-1, route-2, route-3 형식으로 ID 생성 (기존 코드와 호환성 유지)
+    const idMap: Record<string, string> = {
+      'recommended': 'route-1',
+      'fastest': 'route-2',
+      'cheapest': 'route-3'
+    }
+
     return {
-      id: `route-${route.type}`,
+      id: idMap[route.type] || `route-${route.type}`,
       type: route.type,
       totalDuration: route.duration,
       totalCost: route.cost,
@@ -141,6 +148,7 @@ function generateLongDistanceRoutes(
   const trainFare = Math.round(distanceKm * 50) // Approximate KTX fare
 
   // Recommended route: Train + minimal transfers
+  // 지도에 그릴 수 있도록 실제로 다른 좌표를 사용
   const recommendedRoute: Route = {
     id: 'route-1',
     type: 'recommended',
@@ -152,66 +160,32 @@ function generateLongDistanceRoutes(
     color: '#3B82F6',
     steps: [
       {
-        mode: 'walk',
-        from: origin,
-        to: { ...origin, name: `${origin.name || origin.address} (역 방향)` },
-        duration: 5,
-        distance: 300,
-        instruction: '역으로 이동',
-      },
-      {
         mode: 'train',
-        from: { ...origin, name: `${origin.name || origin.address}역` },
-        to: { ...destination, name: `${destination.name || destination.address}역` },
+        from: origin,
+        to: destination,
         duration: trainDuration,
-        distance: distanceM - 5000,
+        distance: distanceM,
         instruction: 'KTX 탑승',
         line: 'KTX',
         lineColor: '#0052A4',
       },
-      {
-        mode: 'subway',
-        from: { ...destination, name: `${destination.name || destination.address}역` },
-        to: destination,
-        duration: 20,
-        distance: 4000,
-        instruction: '지하철로 환승',
-        line: '1호선',
-        lineColor: '#0052A4',
-      },
-      {
-        mode: 'walk',
-        from: destination,
-        to: destination,
-        duration: 5,
-        distance: 700,
-        instruction: '목적지까지 도보',
-      },
     ],
   }
 
-  // Fastest route: Express train
+  // Fastest route: Express train (더 빠른 KTX)
   const fastestRoute: Route = {
     id: 'route-2',
     type: 'fastest',
     name: '최단시간 경로',
-    duration: trainDuration + 20,
+    duration: trainDuration - 5,
     cost: trainFare + 4000,
-    transfers: 1,
+    transfers: 0,
     distance: distanceM,
     color: '#EF4444',
     steps: [
       {
-        mode: 'walk',
-        from: origin,
-        to: { ...origin, name: `${origin.name || origin.address}역` },
-        duration: 5,
-        distance: 300,
-        instruction: '역으로 이동',
-      },
-      {
         mode: 'train',
-        from: { ...origin, name: `${origin.name || origin.address}역` },
+        from: origin,
         to: destination,
         duration: trainDuration - 5, // Express is faster
         distance: distanceM,
@@ -219,63 +193,29 @@ function generateLongDistanceRoutes(
         line: 'KTX',
         lineColor: '#0052A4',
       },
-      {
-        mode: 'walk',
-        from: destination,
-        to: destination,
-        duration: 20,
-        distance: 1500,
-        instruction: '목적지까지 도보',
-      },
     ],
   }
 
-  // Cheapest route: Regular train + bus
+  // Cheapest route: Regular train (ITX)
   const cheapestRoute: Route = {
     id: 'route-3',
     type: 'cheapest',
     name: '최저비용 경로',
-    duration: trainDuration + 60,
-    cost: Math.round(trainFare * 0.7) + 1400,
-    transfers: 3,
+    duration: trainDuration + 30,
+    cost: Math.round(trainFare * 0.6),
+    transfers: 0,
     distance: distanceM,
     color: '#10B981',
     steps: [
       {
-        mode: 'walk',
-        from: origin,
-        to: { ...origin, name: `${origin.name || origin.address}역` },
-        duration: 8,
-        distance: 500,
-        instruction: '역으로 이동',
-      },
-      {
         mode: 'train',
-        from: { ...origin, name: `${origin.name || origin.address}역` },
-        to: { ...destination, name: `${destination.name || destination.address}역` },
-        duration: trainDuration + 20, // Slower train
-        distance: distanceM - 8000,
-        instruction: 'ITX 완행 탑승',
+        from: origin,
+        to: destination,
+        duration: trainDuration + 30, // Slower train
+        distance: distanceM,
+        instruction: 'ITX/무궁화호 탑승',
         line: 'ITX',
         lineColor: '#0052A4',
-      },
-      {
-        mode: 'bus',
-        from: { ...destination, name: `${destination.name || destination.address}역` },
-        to: destination,
-        duration: 25,
-        distance: 7000,
-        instruction: '버스로 환승',
-        line: '간선버스',
-        lineColor: '#33CC99',
-      },
-      {
-        mode: 'walk',
-        from: destination,
-        to: destination,
-        duration: 7,
-        distance: 500,
-        instruction: '목적지까지 도보',
       },
     ],
   }
@@ -303,30 +243,14 @@ function generateMediumDistanceRoutes(
     color: '#3B82F6',
     steps: [
       {
-        mode: 'walk',
-        from: origin,
-        to: origin,
-        duration: 5,
-        distance: 200,
-        instruction: '지하철역으로 이동',
-      },
-      {
         mode: 'subway',
         from: origin,
         to: destination,
-        duration: transitDuration - 15,
-        distance: distanceM - 2000,
-        instruction: '직통 지하철 탑승',
+        duration: transitDuration,
+        distance: distanceM,
+        instruction: '광역 지하철 탑승',
         line: '1호선',
         lineColor: '#0052A4',
-      },
-      {
-        mode: 'walk',
-        from: destination,
-        to: destination,
-        duration: 10,
-        distance: 1800,
-        instruction: '목적지까지 도보',
       },
     ],
   }
@@ -337,45 +261,19 @@ function generateMediumDistanceRoutes(
     name: '최단시간 경로',
     duration: Math.round(transitDuration * 0.8),
     cost: 3500,
-    transfers: 2,
+    transfers: 1,
     distance: distanceM,
     color: '#EF4444',
     steps: [
       {
-        mode: 'walk',
-        from: origin,
-        to: origin,
-        duration: 3,
-        distance: 150,
-        instruction: '버스정류장으로 이동',
-      },
-      {
         mode: 'bus',
         from: origin,
-        to: { ...destination, name: '환승역' },
-        duration: Math.round(transitDuration * 0.4),
-        distance: Math.round(distanceM * 0.5),
-        instruction: '급행버스 탑승',
-        line: '광역버스',
+        to: destination,
+        duration: Math.round(transitDuration * 0.8),
+        distance: distanceM,
+        instruction: '광역급행버스 직통',
+        line: '광역급행',
         lineColor: '#FF6B6B',
-      },
-      {
-        mode: 'subway',
-        from: { ...destination, name: '환승역' },
-        to: destination,
-        duration: Math.round(transitDuration * 0.3),
-        distance: Math.round(distanceM * 0.4),
-        instruction: '지하철 환승',
-        line: '2호선',
-        lineColor: '#00A84D',
-      },
-      {
-        mode: 'walk',
-        from: destination,
-        to: destination,
-        duration: 7,
-        distance: 1000,
-        instruction: '목적지까지 도보',
       },
     ],
   }
@@ -391,30 +289,14 @@ function generateMediumDistanceRoutes(
     color: '#10B981',
     steps: [
       {
-        mode: 'walk',
-        from: origin,
-        to: origin,
-        duration: 8,
-        distance: 400,
-        instruction: '버스정류장으로 이동',
-      },
-      {
         mode: 'bus',
         from: origin,
         to: destination,
-        duration: Math.round(transitDuration * 1.2),
-        distance: distanceM - 1000,
+        duration: Math.round(transitDuration * 1.3),
+        distance: distanceM,
         instruction: '일반버스 직통',
         line: '간선버스',
         lineColor: '#33CC99',
-      },
-      {
-        mode: 'walk',
-        from: destination,
-        to: destination,
-        duration: 5,
-        distance: 600,
-        instruction: '목적지까지 도보',
       },
     ],
   }
@@ -435,55 +317,21 @@ function generateShortDistanceRoutes(
     id: 'route-1',
     type: 'recommended',
     name: '추천 경로',
-    duration: transitDuration + 10,
+    duration: transitDuration,
     cost: 1400,
     transfers: 1,
     distance: distanceM,
     color: '#3B82F6',
     steps: [
       {
-        mode: 'walk',
-        from: origin,
-        to: origin,
-        duration: 3,
-        distance: 200,
-        instruction: '지하철역으로 이동',
-      },
-      {
         mode: 'subway',
         from: origin,
-        to: { ...destination, name: '환승역' },
-        duration: Math.round(transitDuration * 0.6),
-        distance: Math.round(distanceM * 0.7),
-        instruction: '2호선 탑승',
+        to: destination,
+        duration: transitDuration,
+        distance: distanceM,
+        instruction: '지하철 2호선 탑승',
         line: '2호선',
         lineColor: '#00A84D',
-      },
-      {
-        mode: 'walk',
-        from: { ...destination, name: '환승역' },
-        to: { ...destination, name: '버스정류장' },
-        duration: 2,
-        distance: 100,
-        instruction: '버스로 환승',
-      },
-      {
-        mode: 'bus',
-        from: { ...destination, name: '버스정류장' },
-        to: destination,
-        duration: Math.round(transitDuration * 0.3),
-        distance: Math.round(distanceM * 0.2),
-        instruction: '지선버스 탑승',
-        line: '지선버스',
-        lineColor: '#33CC99',
-      },
-      {
-        mode: 'walk',
-        from: destination,
-        to: destination,
-        duration: 3,
-        distance: 200,
-        instruction: '목적지까지 도보',
       },
     ],
   }
@@ -499,30 +347,14 @@ function generateShortDistanceRoutes(
     color: '#EF4444',
     steps: [
       {
-        mode: 'walk',
-        from: origin,
-        to: origin,
-        duration: 2,
-        distance: 100,
-        instruction: '버스정류장으로 이동',
-      },
-      {
         mode: 'bus',
         from: origin,
         to: destination,
-        duration: Math.round(transitDuration * 0.6),
-        distance: distanceM - 500,
+        duration: Math.round(transitDuration * 0.7),
+        distance: distanceM,
         instruction: '급행버스 직통',
         line: '광역급행',
         lineColor: '#FF6B6B',
-      },
-      {
-        mode: 'walk',
-        from: destination,
-        to: destination,
-        duration: 5,
-        distance: 400,
-        instruction: '목적지까지 도보',
       },
     ],
   }
@@ -531,37 +363,21 @@ function generateShortDistanceRoutes(
     id: 'route-3',
     type: 'cheapest',
     name: '최저비용 경로',
-    duration: Math.round(transitDuration * 1.5),
+    duration: Math.round(transitDuration * 1.2),
     cost: 1400,
-    transfers: 1,
+    transfers: 0,
     distance: distanceM,
     color: '#10B981',
     steps: [
       {
-        mode: 'walk',
-        from: origin,
-        to: origin,
-        duration: 7,
-        distance: 500,
-        instruction: '버스정류장으로 이동',
-      },
-      {
         mode: 'bus',
         from: origin,
-        to: { ...destination, name: '환승정류장' },
-        duration: Math.round(transitDuration * 0.8),
-        distance: Math.round(distanceM * 0.6),
-        instruction: '일반버스 탑승',
+        to: destination,
+        duration: Math.round(transitDuration * 1.2),
+        distance: distanceM,
+        instruction: '간선버스 직통',
         line: '간선버스',
         lineColor: '#33CC99',
-      },
-      {
-        mode: 'walk',
-        from: { ...destination, name: '환승정류장' },
-        to: destination,
-        duration: Math.round(transitDuration * 0.6),
-        distance: Math.round(distanceM * 0.3),
-        instruction: '목적지까지 도보',
       },
     ],
   }
