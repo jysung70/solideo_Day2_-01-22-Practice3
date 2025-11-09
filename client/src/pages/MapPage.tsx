@@ -84,6 +84,9 @@ export const MapPage: React.FC = () => {
   const participants = travelData?.participants || 1
   const duration = travelData?.duration || 1
 
+  console.log('✨ [TEST] Git pull 테스트 - 이 메시지가 보이면 성공!')
+  console.log('✨ [TEST] 현재 시간:', new Date().toLocaleTimeString('ko-KR'))
+
   // 동적으로 경로 생성 (사용자 입력 기반) - useMemo로 최적화하여 무한 렌더링 방지
   const dynamicRoutes = useMemo(() => {
     console.log('🗺️ [MapPage] Generating routes for:', origin.address, '→', destination.address)
